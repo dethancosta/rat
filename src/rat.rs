@@ -1,15 +1,32 @@
-use std::io::{self, BufReader, BufRead, Read};
+use std::io::{self, BufReader, BufRead};
+use std::fs::File;
 
-pub fn get_contents<T: Read>(source: T) -> Result<(), io::Error> {
-    let mut reader = BufReader::new(source);
+pub fn get_contents(source: String) -> Result<Vec<String>, io::Error> {
+    let mut lines: Vec<String> = vec![];
     let mut buf = String::new();
-    loop {
-        let result = reader.read_line(&mut buf)?;
-        if result == 0 {
-            break;
+    if source == "-" {
+        let mut reader = BufReader::new(io::stdin());
+        loop {
+            let result = reader.read_line(&mut buf)?;
+            if result == 0 {
+                break;
+            }
+            lines.push(buf.strip_suffix("\n").unwrap().to_string());
+            buf.clear();
         }
-        print!("{}", buf);
+    } else {
+        let f = File::open(source)?;
+        let mut reader = BufReader::new(f);
+        loop {
+            let result = reader.read_line(&mut buf)?;
+            if result == 0 {
+                break;
+            }
+            lines.push(buf.strip_suffix("\n").unwrap().to_string());
+            buf.clear();
+    
+        }
     }
     
-    Ok(())
+    Ok(lines)
 }
